@@ -1,7 +1,15 @@
 from flask import Flask
 from flask import request
 from flask import jsonify
+from flask_cors import CORS
+import random
+import string
 app = Flask(__name__)
+CORS(app)
+
+def id_generator():
+   randomID = ''.join(random.choice(string.ascii_lowercase) for i in range(3)) + ''.join(random.choice(string.digits)for i in range(3))
+   return randomID
 
 @app.route('/users', methods=['GET', 'POST', 'DELETE'])
 def get_users():
@@ -35,10 +43,16 @@ def get_users():
 
    elif request.method == 'POST':
       userToAdd = request.get_json()
+      userToAdd['id'] = id_generator()
       users['users_list'].append(userToAdd)
-      resp = jsonify(success=True)
-      #resp.status_code = 200 #optionally, you can always set a response code. 
-      # 200 is the default code for a normal response
+
+      #The reponsed content is  the updated representation of the object the user inserted
+      resp = jsonify(userToAdd)
+
+      #Set a 201 status code(content created)
+      resp.status_code = 201
+
+      #Return
       return resp
    
    elif request.method == 'DELETE':
@@ -48,6 +62,8 @@ def get_users():
       #resp.status_code = 200 #optionally, you can always set a response code. 
       # 200 is the default code for a normal response
       return resp
+
+   
 
 @app.route('/users/<id>')
 def get_user(id):
